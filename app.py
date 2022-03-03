@@ -3,6 +3,8 @@ import telegram
 from decouple import config
 import youtube_dl as yt
 import re
+import os
+import time
 
 API_KEY = config('API_KEY')
 USER_NAME = config('BOT_USER_NAME')
@@ -14,7 +16,7 @@ YT_LINK = ""
 YT_LINK_MSG_ID = ""
 
 MAX_VIDEO_SIZE = 1100000
-
+LAST_RECIEVED_MSG = ""
 
 # start the flask app
 app = Flask(__name__)
@@ -29,7 +31,7 @@ def download_video(link, chat_id, msg_id, format='video'):
     except yt.utils.DownloadError:
         bot.sendMessage(chat_id=chat_id, text="Invalid URL!",
                         reply_to_message_id=msg_id)
-        return "Invalid URL!"
+        return "Invalid URL!", None
 
     
     if(format == 'video'):
@@ -40,7 +42,7 @@ def download_video(link, chat_id, msg_id, format='video'):
         if(len(availableFormats) == 0):
             bot.sendMessage(chat_id=chat_id, text="Video is Oversized!",
                             reply_to_message_id=msg_id)
-            return "Video is Oversized"
+            return "Video is Oversized", None
 
         sorted(availableFormats, key=lambda x: x['format_note'][:-1:])
 
@@ -64,13 +66,19 @@ def download_video(link, chat_id, msg_id, format='video'):
         bot.sendMessage(chat_id=chat_id, text="Error in downloading. Please try again after some time!",
                         reply_to_message_id=msg_id)
 
-    return 'ok'
+    if('=' in link):
+        downloadedFileName = link.split('=')[-1]
+    else:
+        downloadedFileName = link.split('/')[-1]
+
+    return 'ok', downloadedFileName
 
 
 @app.route('/{}'.format(API_KEY), methods=['POST'])
 def respond():
     global YT_LINK
     global YT_LINK_MSG_ID
+    global LAST_RECIEVED_MSG
     # retrieve the message in JSON and then transform it to Telegram object
     update = telegram.Update.de_json(request.get_json(force=True), bot)
 
@@ -82,16 +90,21 @@ def respond():
 
     # Telegram understands UTF-8, so encode text for unicode compatibility
     text = (update.message.text.encode('utf-8').decode())
+    
     print("----------Recieved: {}".format(text))
     # the first time you chat with the bot AKA the welcoming message
-    if '/start' in text:
+    if '/start' == text:
         bot_welcome = """
         Hi, I'm the base bot.\nWanna know more about my source code ??\nHop onto this link: https://github.com/San-B-09/Telegram-Bot-Base
         """
         bot.sendMessage(chat_id=chat_id, text=bot_welcome,
                         reply_to_message_id=msg_id)
 
-    elif "Download" in text:
+    elif ('/video' == text or '/audio' == text):
+        if (LAST_RECIEVED_MSG == text):
+            return 'ok'
+
+        LAST_RECIEVED_MSG = text
         if(YT_LINK == ""):
             bot.sendMessage(chat_id=chat_id, text="Youtube URL is not set. Kindly send youtube URL",
                             reply_to_message_id=YT_LINK_MSG_ID)
@@ -99,20 +112,37 @@ def respond():
         
         bot.sendMessage(chat_id=chat_id, text="Thanks for using! Please wait for some time.")
 
-        returnMsg = download_video(
-            YT_LINK, chat_id, YT_LINK_MSG_ID, format=(text.split(" ")[-1]).lower())
+        returnMsg, downloadedFileName = download_video(
+            YT_LINK, chat_id, YT_LINK_MSG_ID, format=(text.split("/")[-1]))
+
         YT_LINK = ""
         YT_LINK_MSG_ID = ""
         if(returnMsg == 'ok'):
             bot.sendMessage(
                 chat_id=chat_id, text="Sending...", reply_to_message_id=YT_LINK_MSG_ID)
+
+        for file in os.listdir():
+            if(downloadedFileName in file):
+                bot.send_document(chat_id, open(file, 'rb'),
+                                  reply_to_message_id=YT_LINK_MSG_ID, allow_sending_without_reply=True)
+                break
+   
         
+        while(True):
+            try:
+                os.remove(file)
+                break
+            except:
+                time.sleep(1)
+                continue
+        LAST_RECIEVED_MSG = ""
+
     else:
         regex = re.compile(r'youtube\.com|youtu\.be')
         if(regex.search(text)):
             YT_LINK = text
             YT_LINK_MSG_ID = msg_id
-            buttons = [[telegram.KeyboardButton("Download Video")], [telegram.KeyboardButton("Download Audio")]]
+            buttons = [[telegram.KeyboardButton("/video")], [telegram.KeyboardButton("/audio")]]
             bot.sendMessage(chat_id=chat_id, text="Choose Downloading Format",
                             reply_to_message_id=msg_id, reply_markup=telegram.ReplyKeyboardMarkup(buttons, one_time_keyboard=True))
         else:
