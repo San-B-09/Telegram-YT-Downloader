@@ -66,8 +66,8 @@ def download_video(link, chat_id, msg_id, format='video'):
         bot.sendMessage(chat_id=chat_id, text="Error in downloading. Please try again after some time!",
                         reply_to_message_id=msg_id)
 
-    if('=' in link):
-        downloadedFileName = link.split('=')[-1]
+    if('watch?v=' in link):
+        downloadedFileName = link.split('watch?v=')[-1]
     else:
         downloadedFileName = link.split('/')[-1]
 
