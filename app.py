@@ -95,7 +95,7 @@ def respond():
     # the first time you chat with the bot AKA the welcoming message
     if '/start' == text:
         bot_welcome = """
-        Hi, I'm the base bot.\nWanna know more about my source code ??\nHop onto this link: https://github.com/San-B-09/Telegram-Bot-Base
+        Hi, I'm the YouTube Downloader bot.\nSend in your YouTube video link to start download process.
         """
         bot.sendMessage(chat_id=chat_id, text=bot_welcome,
                         reply_to_message_id=msg_id)
@@ -126,8 +126,7 @@ def respond():
                 bot.send_document(chat_id, open(file, 'rb'),
                                   reply_to_message_id=YT_LINK_MSG_ID, allow_sending_without_reply=True)
                 break
-   
-        
+           
         while(True):
             try:
                 os.remove(file)
