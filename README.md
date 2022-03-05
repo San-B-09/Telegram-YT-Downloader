@@ -20,7 +20,7 @@ URL = "the hosting link that we will create later"
 ## Bot Details
 ```app.py``` contains the complete code for base bot built using ```Flask```. Additionally, we've used **webhook** which provides us a way of letting the bot call our server whenever a message is called, so that we don’t need to make our server suffer in a while loop waiting for a message to come.
 
-### For deployment details, refer this [blog](https://bijawesanket.medium.com/building-your-first-telegram-bot-cca7490ef60e)
+### For deployment details, refer this [blog]()
 
 ## Go talk to your BOT!
 ![Sample Chat](https://github.com/San-B-09/Telegram-YT-Downloader/blob/master/README%20Images/Sample%20Chat.gif)
