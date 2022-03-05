@@ -1,5 +1,5 @@
 # Telegram-YT-Downloader
-This repo containts code for building a YouTube Downloader telegram bot.
+This repo contains code for building a YouTube Downloader telegram bot.
 
 ## Installation Details
 All the required modules are listed under requirements.txt. Run the following command to install the same:
