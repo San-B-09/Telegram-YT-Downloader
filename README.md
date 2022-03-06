@@ -25,4 +25,4 @@ URL = "the hosting link that we will create later"
 ### For deployment details, refer this [blog]()
 
 ## Go talk to your BOT!
-![Sample Chat](https://github.com/San-B-09/Telegram-YT-Downloader/blob/master/README%20Images/Sample%20Chat.gif)
+![Sample Chat](https://github.com/San-B-09/Telegram-YT-Downloader/blob/master/README%20Images/Sample%20Chat%20gif.gif)
